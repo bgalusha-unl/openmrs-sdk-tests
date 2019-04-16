@@ -1,6 +1,6 @@
 
 $openmrs_folder_name = 'openmrs_test_server_folder'
-$openmrs_user_name = '_openmrs_test'
+$openmrs_user_name = 'openmrs_test'
 
 $openmrs_server_path = "~/openmrs/$($openmrs_folder_name)"
 $maven_path = Get-Command mvn | select -expandproperty Path
@@ -59,7 +59,8 @@ If ( $LASTEXITCODE -eq 0 ) {
   exit 1
 }
 
-python my_test.py $maven_path
+python test_old.py $maven_path $openmrs_user_name
+python test_new.py $maven_path $openmrs_user_name
 
 # Remove the test user from the database
 mysql -u root --password=$sql_password -e "DROP USER '$openmrs_user_name'@'localhost'" *> $null
