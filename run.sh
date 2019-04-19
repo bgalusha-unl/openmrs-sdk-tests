@@ -1,11 +1,12 @@
+
 #!/bin/bash
 
-openmrs_folder_name='openmrs_test_server_folder'
+openmrs_folder_name='test_folder'
 openmrs_user_name='openmrs_test'
-openmrs_server_path="~/openmrs/$openmrs_folder_name"
+openmrs_server_path="$HOME/openmrs/$openmrs_folder_name"
 
 # Make sure the openmrs server folder doesn't exist
-if [ -f $openmrs_server_path ]
+if [[ -d "$openmrs_server_path" ]]
 then
   read -p "$openmrs_server_path already exists. Do you want to delete it? (y/n)" -n 1 -r
   echo
@@ -16,6 +17,8 @@ then
   else
     exit 1
   fi
+else
+  echo "$openmrs_server_path does not exist, skipping removal"
 fi
 
 # Test MySQL connection
@@ -60,8 +63,26 @@ else
   exit 1
 fi
 
-#python test_old.py $maven_path $openmrs_user_name
-#python test_new.py $maven_path $openmrs_user_name
+echo
+echo "---BEGIN TESTS---"
+echo
+
+for TEST_FILE in $(ls test*.py)
+do
+  python3 $TEST_FILE $openmrs_user_name $openmrs_folder_name
+  if [[ $? -eq 0 ]]
+  then
+    echo "$TEST_FILE Passed"
+  else
+    echo "$TEST_FILE Failed"
+  fi
+
+  rm -rf $openmrs_server_path
+done
+
+echo
+echo "---TESTS FINISHED---"
+echo
 
 # Remove the test user from the database
 mysql -u root --password=$sql_password -e "DROP USER '$openmrs_user_name'@'localhost'" > /dev/null 2>&1
